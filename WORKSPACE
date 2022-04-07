@@ -5,9 +5,9 @@ workspace(name = "android-compose-bazel")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Versions
-KOTLIN_VERSION = "1.6.20"
+KOTLIN_VERSION = "1.6.10"
 
-COMPOSE_VERSION = "1.0.2"
+COMPOSE_VERSION = "1.2.0-alpha06"
 
 # Android
 RULES_ANDROID_TAG = "0.1.1"
@@ -42,7 +42,7 @@ load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories", "
 kotlin_repositories(
     compiler_release = kotlinc_version(
         release = KOTLIN_VERSION,
-        sha256 = "f3313afdd6abf1b8c75c6292f4e41f2dbafefc8f6c72762c7ba9b3daeef5da59",
+        sha256 = "432267996d0d6b4b17ca8de0f878e44d4a099b7e9f1587a98edc4d27e76c215a",
     ),
 )
 
@@ -60,11 +60,21 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
 )
 
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+
+rules_jvm_external_setup()
+
 # Dependencies
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
+        "androidx.compose.foundation:foundation:%s" % COMPOSE_VERSION,
+        "androidx.compose.animation:animation:%s" % COMPOSE_VERSION,
         "org.jetbrains.kotlin:kotlin-stdlib:%s" % KOTLIN_VERSION,
         "androidx.core:core-ktx:1.7.0",
         "androidx.compose.ui:ui:%s" % COMPOSE_VERSION,
@@ -73,16 +83,22 @@ maven_install(
         "androidx.compose.ui:ui-tooling-preview:%s" % COMPOSE_VERSION,
         "androidx.compose.compiler:compiler:%s" % COMPOSE_VERSION,
         "androidx.compose.runtime:runtime:%s" % COMPOSE_VERSION,
-        "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
-        "androidx.activity:activity-compose:1.3.1",
+        "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1",
+        "androidx.activity:activity-compose:1.4.0",
     ],
+    jetify = True,
     override_targets = {
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": "@//:kotlinx_coroutines_core_jvm",
     },
     repositories = [
-        "https://maven.google.com",
+        "https://maven.google.com/",
         "https://repo1.maven.org/maven2",
     ],
+    # Resolving user-specified and transitive dependency version conflicts
+    # pinned: pin the versions of the artifacts that are explicitly specified in maven_install.
+    # It is necessary because of the version of Jetpack compose >= 1.2.0-alpha02
+    # Perhaps the stable version of Jetpack Compose will fix this error
+    version_conflict_policy = "pinned",
 )
 
 # Secondary maven repository used mainly for workarounds
