@@ -5,7 +5,7 @@ workspace(name = "android-compose-bazel")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Versions
-KOTLIN_VERSION = "1.5.21"
+KOTLIN_VERSION = "1.6.20"
 
 COMPOSE_VERSION = "1.0.2"
 
@@ -86,12 +86,15 @@ maven_install(
 )
 
 # Secondary maven repository used mainly for workarounds
+# The versions must also match in /BUILD.bazel
+KOTLINX_COROUTINES_VERSION = "1.6.0"
+
 maven_install(
     name = "maven_secondary",
     artifacts = [
         # Workaround to add missing 'sun.misc' dependencies to 'kotlinx-coroutines-core-jvm' artifact
         # Check root BUILD file and 'override_targets' arg of a primary 'maven_install'
-        "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.1",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.0",
     ],
     fetch_sources = True,
     repositories = [
