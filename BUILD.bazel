@@ -1,16 +1,35 @@
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "define_kt_toolchain")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "define_kt_toolchain", "kt_compiler_plugin")
 load("@bazel_tools//tools/jdk:default_java_toolchain.bzl", "default_java_toolchain")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_javac_options")
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "define_kt_toolchain",  "kt_kotlinc_options")
 
-package(default_visibility = ["//visibility:public"])
+kt_kotlinc_options(
+    name = "kt_kotlinc_options",
+)
 
-exports_files(["debug.keystore"])
+kt_javac_options(
+    name = "kt_javac_options",
+)
 
 default_java_toolchain(name = "java_toolchain")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
-    api_version = "1.5",
-    jvm_target = "1.8",
-    language_version = "1.5",
-    experimental_use_abi_jars = False,
+    api_version = "1.6",
+    experimental_use_abi_jars = True,
+    javac_options = "//:kt_javac_options",
+    jvm_target = "11",
+    kotlinc_options = "//:kt_kotlinc_options",
+    language_version = "1.6",
+)
+
+# Jetpack Compose compiler
+load("@rules_jvm_external//:defs.bzl", "artifact")
+
+kt_compiler_plugin(
+    name = "jetpack_compose_compiler_plugin",
+    id = "androidx.compose.compiler",
+    target_embedded_compiler = True,
+    visibility = ["//visibility:public"],
+    deps = [artifact("androidx.compose.compiler:compiler")],
 )

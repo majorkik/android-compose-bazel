@@ -1,133 +1,92 @@
-workspace(name = "compose-arch-sample")
+# Workspace name
+workspace(name = "android-compose-bazel")
 
-KOTLIN_COMPILER_VERSION = "1.5"
-COMPOSE_VERSION = "1.0.0"
+# Structure
+# - Base
+# - Android
+# - Kotlin
+# - Java
+# - Dependencies
 
+# Base
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_JAVA_VERSION = "4.0.0"
-RULES_JAVA_SHA = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe"
-
-http_archive(
-    name = "rules_java",
-    sha256 = RULES_JAVA_SHA,
-    url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = RULES_JAVA_VERSION),
-)
-
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
-rules_java_dependencies()
-rules_java_toolchains()
-
-RULES_JVM_EXTERNAL_VERSION = "4.1"
-RULES_JVM_EXTERNAL_SHA = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140"
-
-http_archive(
-    name = "rules_jvm_external",
-    sha256 = RULES_JVM_EXTERNAL_SHA,
-    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_VERSION,
-    urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_VERSION],
-)
-
-load("@rules_jvm_external//:defs.bzl", "maven_install")
-
-maven_install(
-    artifacts = [
-        "androidx.activity:activity-compose:1.3.0",
-        "androidx.appcompat:appcompat:1.3.0",
-        "androidx.core:core-ktx:1.5.0",
-        "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
-        "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07",
-        "androidx.navigation:navigation-compose:2.4.0-alpha05",
-        "androidx.paging:paging-compose:1.0.0-alpha12",
-        "androidx.paging:paging-runtime-ktx:3.0.0",
-        "androidx.palette:palette-ktx:1.0.0",
-        "androidx.room:room-compiler:2.3.0",
-        "androidx.room:room-ktx:2.3.0",
-        "androidx.room:room-runtime:2.3.0",
-        "com.google.android.material:material:1.3.0",
-        "com.squareup.moshi:moshi-kotlin:1.12.0",
-        "com.squareup.okhttp3:logging-interceptor:4.2.1",
-        "com.squareup.retrofit2:converter-moshi:2.9.0",
-        "com.squareup.retrofit2:retrofit:2.9.0",
-        "io.coil-kt:coil-compose:1.3.1",
-        "androidx.compose.ui:ui:%s" % COMPOSE_VERSION,
-        "androidx.compose.ui:ui-tooling:%s" % COMPOSE_VERSION,
-        "androidx.compose.material:material:%s" % COMPOSE_VERSION,
-        "androidx.compose.compiler:compiler:%s" % COMPOSE_VERSION,
-        "androidx.compose.runtime:runtime:%s" % COMPOSE_VERSION,
-        "com.google.guava:guava:28.1-android",
-    ],
-    repositories = [
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-    override_targets = {
-        "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": "@//third_party:kotlinx_coroutines_core_jvm",
-        "org.jetbrains.kotlin:kotlin-reflect": "@//third_party:kotlin_reflect",
-        "androidx.room:room-runtime": "@//third_party:room_runtime",
-    },
-)
-
-maven_install(
-    name = "maven_secondary",
-    artifacts = [
-        "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.1",
-        "androidx.room:room-runtime:2.3.0",
-    ],
-    repositories = [
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-)
-
-
-RULES_ANDROID_VERSION = "0.1.1"
+# Android
+RULES_ANDROID_TAG = "0.1.1"
 RULES_ANDROID_SHA = "cd06d15dd8bb59926e4d65f9003bfc20f9da4b2519985c27e190cddc8b7a7806"
 
 http_archive(
     name = "rules_android",
     sha256 = RULES_ANDROID_SHA,
-    strip_prefix = "rules_android-%s" % RULES_ANDROID_VERSION,
-    urls = ["https://github.com/bazelbuild/rules_android/archive/v%s.zip" % RULES_ANDROID_VERSION],
+    strip_prefix = "rules_android-%s" % RULES_ANDROID_TAG,
+    urls = ["https://github.com/bazelbuild/rules_android/archive/v%s.zip" % RULES_ANDROID_TAG],
 )
-
-load("@rules_android//android:rules.bzl", "android_sdk_repository")
 
 android_sdk_repository(
-    name = "androidsdk"
+    name = "androidsdk",
 )
 
-RULES_KOTLIN_VERSION = "c26007a1776a79d94bea7c257ef07a23bbc998d5"
-RULES_KOTLIN_SHA = "be7b1fac4f93fbb81eb79f2f44caa97e1dfa69d2734e4e184443acd9f5182386"
+# Kotlin
+
+RULES_KOTLIN_TAG = "1.5.0"
+RULES_KOTLIN_SHA = "12d22a3d9cbcf00f2e2d8f0683ba87d3823cb8c7f6837568dd7e48846e023307"
 
 http_archive(
     name = "io_bazel_rules_kotlin",
     sha256 = RULES_KOTLIN_SHA,
-    strip_prefix = "rules_kotlin-%s" % RULES_KOTLIN_VERSION,
-    urls = ["https://github.com/bazelbuild/rules_kotlin/archive/%s.tar.gz" % RULES_KOTLIN_VERSION],
+    urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v%s/rules_kotlin_release.tgz" % RULES_KOTLIN_TAG],
 )
 
-load("@io_bazel_rules_kotlin//kotlin:dependencies.bzl", "kt_download_local_dev_dependencies")
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
-kt_download_local_dev_dependencies()
+kotlin_repositories()
 
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
-RULES_KOTLIN_COMPILER_RELEASE = {
-    "urls": ["https://github.com/JetBrains/kotlin/releases/download/v{v}/kotlin-compiler-{v}.zip".format(v = KOTLIN_COMPILER_VERSION)],
-    "sha256": "2f8de1d73b816354055ff6a4b974b711c11ad55a68b948ed30b38155706b3c4e",
-}
+kt_register_toolchains()
 
-kotlin_repositories(compiler_release = RULES_KOTLIN_COMPILER_RELEASE)
+# Java
 
-register_toolchains("//:kotlin_toolchain")
-
+# Dependencies
+RULES_JVM_EXTERNAL_TAG = "4.2"
+RULES_JVM_EXTERNAL_SHA = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca"
 
 http_archive(
-    name = "remote_java_tools_windows",
-    sha256 = "a0fc3a3be3ea01a4858d12f56892dd663c02f218104e8c1dc9f3e90d5e583bcb",
-    urls = [
-        "https://mirror.bazel.build/bazel_java_tools/releases/javac11/v10.7/java_tools_javac11_windows-v10.7.zip",
-        "https://github.com/bazelbuild/java_tools/releases/download/javac11_v10.7/java_tools_javac11_windows-v10.7.zip",
+    name = "rules_jvm_external",
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+# rules_jvm_external_deps uses a default list of maven repositories to download rules_jvm_external
+# own dependencies from. Should you wish to change this, use the repositories parameter:
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+
+rules_jvm_external_setup()
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+# Maven dependencies
+COMPOSE_VERSION = "1.0.1"
+KOTLIN_VERSION = "1.5.21"
+
+maven_install(
+    artifacts = [
+        "org.jetbrains.kotlin:kotlin-stdlib:%s" % KOTLIN_VERSION,
+        "androidx.core:core-ktx:1.7.0",
+        "androidx.compose.ui:ui:%s" % COMPOSE_VERSION,
+        "androidx.compose.material:material:%s" % COMPOSE_VERSION,
+        "androidx.compose.ui:ui-tooling-preview:%s" % COMPOSE_VERSION,
+        "androidx.compose.compiler:compiler:%s" % COMPOSE_VERSION,
+        "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+        "androidx.activity:activity-compose:1.3.1",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
     ],
 )
