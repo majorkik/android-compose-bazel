@@ -24,6 +24,7 @@ http_archive(
 android_sdk_repository(
     name = "androidsdk",
     api_level = 31,
+    build_tools_version = "30.0.2",
 )
 
 # Kotlin
