@@ -36,4 +36,9 @@ bazelisk build app:app-lib
 
 # Build android binary
 bazelisk build app:bin
+
+# Start app
+bazelisk mobile-install app:bin start_app
+# or (incremental build)
+bazelisk mobile-install --incremental app:bin start_app
 ```
